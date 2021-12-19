@@ -1,0 +1,111 @@
+esp32_ble_tracker:
+
+ble_client:
+  - mac_address: 02:28:20:EA:14:74
+    id: stue_am43_right
+#    on_connect:
+#      then:
+#        - lambda: |-
+#            ESP_LOGD("ble_client_lambda", "Connected to the right curtain");
+  - mac_address: 02:C7:E1:7B:7B:1B
+    id: stue_am43_left  
+#    on_connect:
+#      then:
+#        - lambda: |-
+#            ESP_LOGD("ble_client_lambda", "Connected to the left curtain");
+
+cover:
+  - platform: am43
+    name: ${friendly_name} Højre
+    id: livingroom_right
+    ble_client_id: stue_am43_right
+  
+  
+  - platform: am43
+    name: ${friendly_name} Venstre"
+    id: livingroom_left
+    ble_client_id: stue_am43_left 
+
+sensor:
+  - platform: am43
+    ble_client_id: stue_am43_right
+    battery_level:
+      name: ${friendly_name} Højre Battery
+    illuminance:
+      name: ${friendly_name} Højre Light
+    update_interval: 120s
+  
+  
+  - platform: am43
+    ble_client_id: stue_am43_left
+    battery_level:
+      name: ${friendly_name} Venstre Battery
+    illuminance:
+      name: ${friendly_name} Venstre Light
+    update_interval: 120s  
+
+switch:
+  - platform: ble_client
+    name: ${friendly_name} Højre
+    id: switch_right
+    ble_client_id: stue_am43_right
+  
+  
+  - platform: ble_client
+    name: ${friendly_name} Venstre
+    id: switch_left
+    ble_client_id: stue_am43_left
+    
+#status_led:
+#  pin:
+#    number: 5
+#    inverted: true
+    
+#######################################
+#  Sun specific Config Begins Below   #
+#######################################  
+  
+sun:
+  latitude: 55.243408
+  longitude: 9.440710
+  
+  on_sunrise:
+    then:
+      - logger.log: Good morning - Covers will now open!
+      - switch.turn_on: switch_right
+      - switch.turn_on: switch_left
+      - delay: 2min
+      - cover.open: livingroom_right
+      - cover.open: livingroom_left
+      - delay: 2min
+      - switch.turn_off: switch_right
+      - switch.turn_off: switch_left
+      
+    
+  on_sunset:
+    then:
+      - logger.log: Good evening - Covers will now close!
+      - switch.turn_on: switch_right
+      - switch.turn_on: switch_left
+      - delay: 2min
+      - cover.close: livingroom_right
+      - cover.close: livingroom_left
+      - delay: 2min
+      - switch.turn_off: switch_right
+      - switch.turn_off: switch_left
+
+time:
+  - platform: homeassistant 
+  
+text_sensor:
+  - platform: sun
+    name: Sun Next Sunrise
+    type: sunrise
+    icon: mdi:weather-sunset-up
+  - platform: sun
+    name: Sun Next Sunset
+    type: sunset 
+    icon: mdi:weather-sunset-down    
+
+
+
